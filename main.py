@@ -24,21 +24,19 @@ client = tweepy.Client(BEARER_TOKEN , API_KEY , API_KEY_SECRET , ACCESS_TOKEN , 
 
 def log_tweets():
     print("logging tweets")
-    with open("tweets.csv", "r", encoding="utf-8") as tweets_file:
+    with open("tweet_id.csv", "r", encoding="utf-8") as tweets_file:
         tweets_reader = csv.reader(tweets_file)
-        next(tweets_reader)
+        if not any(tweets_reader):  # Check if there are any rows in the file
+            return  # If no rows, exit the function
+        
+        next(tweets_reader)  # Skip the header row
 
         with open("log.csv", "a", newline="", encoding="utf-8") as log_file:
             log_writer = csv.writer(log_file, quoting=csv.QUOTE_NONNUMERIC)
             for row in tweets_reader:
-                tweet_id = row[0]  # Assuming the tweet ID is in the first column
-                username = row[1]  # Assuming the username is in the second column
-
-                tweet_url = f"https://twitter.com/{username}/status/{tweet_id}"
+                tweet_id = row[0].strip()  
+                tweet_url = f"https://twitter.com/web/status/{tweet_id}"
                 log_writer.writerow([tweet_url])
-
-log_tweets()
-
 
 
 def extract_tweet_ids(csv_file, output_file):
@@ -98,7 +96,7 @@ def clear_tweet_id_owner():
 # extras end
 
 
-# tasks
+# task 1
 
 list_search_keywords1 = os.getenv("list_search_keywords")
 list_search_keywords2 = list_search_keywords1.split(",")
@@ -114,6 +112,7 @@ ending_time_task1 = os.getenv("ending_time_task1")
 running_task1 = os.getenv("running_task1")
 
 def get_list_tweets(list_id):
+    print("getting tweets for your required list")
     tweets = client.get_list_tweets(id=list_id, max_results=95)
     tweet_data = tweets.data
     result = []
@@ -170,6 +169,7 @@ def reply_to_tweets_task1(csv_file, reply_phrase_list_task1):
 
 
 
+# task 2
 
 you_follow_search_keywords = os.getenv("you_follow_search_keywords")
 reply_phrase_task2 = os.getenv("reply_phrase_task2")
@@ -178,41 +178,44 @@ interval_task2 = int(os.getenv("interval_task2"))
 starting_time_task2 = os.getenv("starting_time_task2")
 ending_time_task2 = os.getenv("ending_time_task2")
 running_task2 = os.getenv("running_task2")
-
+you_follow_tweet_hours_old = os.getenv("you_follow_tweet_hours_old")
 
 def search_tweets_you_follow():
-    print("searching tweets for the users you follow")
-    tweets = client.get_home_timeline(exclude='replies,retweets', max_results=95)
+    print("Searching tweets for the users you follow")
+    end_time = datetime.datetime.utcnow() - datetime.timedelta(hours=int(you_follow_tweet_hours_old))
+    end_time_str = end_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+    tweets = client.get_home_timeline(max_results=95, end_time=end_time_str)
     tweet_data = tweets.data
     result = []
 
-    if  not tweet_data is None and len(tweet_data) > 0:
+    if not tweet_data is None and len(tweet_data) > 0:
         for tweet in tweet_data:
-            obj = {}
-            obj['id'] = tweet['id']
-            obj['text'] = tweet['text']
-            result.append(obj)
+            if not tweet['text'].startswith('RT'):
+                obj = {}
+                obj['id'] = tweet['id']
+                obj['text'] = tweet['text']
+                result.append(obj)
     else:
         print("No tweets found")
         return []
-    
+
     return result
 
-     
+   
  
+
 def tweet_searched_you_follow(you_follow_search_keywords):
     tweets = search_tweets_you_follow()
 
     filtered_tweets = []
     for tweet in tweets:
         text = tweet['text'].lower()
-        if any(re.search(r"\b{}\b".format(re.escape(keyword)), text) for keyword in you_follow_search_keywords):
+        if any(keyword.lower() in text for keyword in you_follow_search_keywords.split(',')):
             filtered_tweets.append(tweet)
 
     if len(filtered_tweets) > 0:
         df = pd.DataFrame(filtered_tweets, columns=["id", "text"])
         df.to_csv("tweets.csv", index=False, sep=",", encoding="utf-8", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-
 
 
 
@@ -238,6 +241,7 @@ def reply_to_tweets_task2(csv_file, reply_phrase_list_task2):
                 continue
 
 
+# task 3
 
 search_keyword = os.getenv("search_keyword")
 reply_phrase_task3 = os.getenv("reply_phrase_task3")
@@ -246,12 +250,14 @@ interval_task3 = int(os.getenv("interval_task3"))
 starting_time_task3 = os.getenv("starting_time_task3")
 ending_time_task3 = os.getenv("ending_time_task3")
 running_task3 = os.getenv("running_task3")
-
+all_tweets_hours_old = os.getenv("all_tweets_hours_old")
 
 
 def search_tweets(query):
     print("searching tweets in all for your required keyword")
-    tweets = client.search_recent_tweets(query=query, max_results=95)
+    end_time = datetime.datetime.utcnow() - datetime.timedelta(hours=all_tweets_hours_old)
+    end_time_str = end_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+    tweets = client.search_recent_tweets(query=query, max_results=95, end_time=end_time_str)
     tweet_data = tweets.data
     result = []
 
@@ -266,6 +272,7 @@ def search_tweets(query):
         return []
     
     return result
+
 
 
 def tweet_searched(search_keyword):
@@ -297,6 +304,7 @@ def reply_to_tweets_task3(csv_file, reply_phrase_list_task3):
                 continue
 
 
+# task 4
 
 search_owner_tweets_task4 = os.getenv("search_owner_tweets_task4")
 starting_time_task4 = os.getenv("starting_time_task4")
@@ -348,7 +356,7 @@ def retweet_owner_tweets(csv_file):
 
 
 
-#task end
+#tasks
 
 
 def task1():
@@ -357,7 +365,7 @@ def task1():
     tweet_searched_list(list_id,list_search_keywords)
     log_tweets()
     extract_tweet_ids('tweets.csv', 'tweet_id.csv')
-    reply_to_tweets_task1('tweet_id.csv', reply_phrase_list_task1)
+   # reply_to_tweets_task1('tweet_id.csv', reply_phrase_list_task1)
     time.sleep(500)
 
 
@@ -367,10 +375,13 @@ def task2():
     clear_tweets()
     clear_tweet_id()
     tweet_searched_you_follow(you_follow_search_keywords)
-    log_tweets()
     extract_tweet_ids('tweets.csv', 'tweet_id.csv')
-    reply_to_tweets_task2('tweet_id.csv', reply_phrase_list_task2)
-    time.sleep(500)
+   # reply_to_tweets_task2('tweet_id.csv', reply_phrase_list_task2)
+    log_tweets()
+    time.sleep(5)
+
+
+task2()
 
 
 def task3():
@@ -379,7 +390,7 @@ def task3():
     tweet_searched(search_keyword)
     log_tweets()
     extract_tweet_ids('tweets.csv', 'tweet_id.csv')
-    reply_to_tweets_task3('tweet_id.csv', reply_phrase_list_task3)
+   # reply_to_tweets_task3('tweet_id.csv', reply_phrase_list_task3)
     time.sleep(500)
 
 
@@ -391,7 +402,7 @@ def task4():
     time.sleep(10)
     extract_tweet_ids('tweets_owner.csv', 'tweets_owner_id.csv')
     time.sleep(10)
-    retweet_owner_tweets('tweets_owner_id.csv')
+   # retweet_owner_tweets('tweets_owner_id.csv')
     time.sleep(50)
 
 
@@ -441,6 +452,9 @@ def operation4():
         time.sleep(30)
 
 
+
+
+"""
 thread1 = threading.Thread(target=operation1)
 thread2 = threading.Thread(target=operation2)
 thread3 = threading.Thread(target=operation3)
@@ -455,5 +469,5 @@ thread4.start()
 
 
 
-
+"""
 

@@ -17,20 +17,13 @@ starting_time_task1="08:00:00"
 ending_time_task1="08:59:00"
 running_task1="y"
 
-
-
-
 # Search X from people you follow and reply Y
-you_follow_search_keywords="GM,fam,Morning fam,Morning"
+you_follow_search_keywords="it,gm"
 reply_phrase_task2="awesome,nice,looks good,good job,good work,good luck,good go"
 interval_task2="10"
 starting_time_task2="09:00:00"
 ending_time_task2="09:59:00"
 running_task2="y"
-# Edit time for how recent tweets in hours if in minutes divide by 60
-you_follow_tweet_hours_old="7"
-
-
 
 # Search X from all tweets and reply Y
 search_keyword ="(news OR pakistan) -is:reply -is:retweet"
@@ -39,8 +32,6 @@ interval_task3="10"
 starting_time_task3="10:00:00"
 ending_time_task3="10:59:00"
 running_task3="y"
-# Edit time for how recent tweets in hours if in minutes divide by 60
-all_tweet_hours_old="1"
 
 
 # Auto Retweet
