@@ -8,7 +8,9 @@ import threading
 import time
 import random
 from datetime import datetime, timedelta
-import datetime
+import pytz 
+
+
 load_dotenv()
 
 API_KEY = os.getenv("API_KEY")
@@ -98,9 +100,7 @@ def clear_tweet_id_owner():
 
 # task 1
 
-list_search_keywords1 = os.getenv("list_search_keywords")
-list_search_keywords2 = list_search_keywords1.split(",")
-list_search_keywords = [keyword.strip() for keyword in list_search_keywords2]
+list_search_keywords = os.getenv("list_search_keywords")
 list_id1 = os.getenv("list_id")
 list_id2 = list_id1.split(",")
 list_id = random.choice(list_id2)
@@ -110,33 +110,50 @@ interval_task1 = int(os.getenv("interval_task1"))
 starting_time_task1 = os.getenv("starting_time_task1")
 ending_time_task1 = os.getenv("ending_time_task1")
 running_task1 = os.getenv("running_task1")
+list_tweet_old = os.getenv("list_tweet_old")
+time_duration_list = os.getenv("time_duration_list")
+
 
 def get_list_tweets(list_id):
-    print("getting tweets for your required list")
-    tweets = client.get_list_tweets(id=list_id, max_results=95)
+    print("Getting tweets for your required list")
+    
+    now = datetime.utcnow()
+    
+    since_time = now - timedelta(time_duration_list=int(list_tweet_old))
+    
+    since_time = since_time.replace(tzinfo=pytz.UTC)
+    
+    max_results = 95
+    tweets = client.get_list_tweets(id=list_id, max_results=max_results, expansions="author_id", tweet_fields="created_at,text")
     tweet_data = tweets.data
     result = []
 
-    if  not tweet_data is None and len(tweet_data) > 0:
+    if not tweet_data is None and len(tweet_data) > 0:
         for tweet in tweet_data:
-            obj = {}
-            obj['id'] = tweet['id']
-            obj['text'] = tweet['text']
-            result.append(obj)
+            tweet_time = tweet['created_at']  
+            if tweet_time >= since_time and not tweet['text'].startswith('RT'):
+                obj = {}
+                obj['id'] = tweet['id']
+                obj['text'] = tweet['text']
+                result.append(obj)
     else:
         print("No tweets found")
         return []
     
     return result
 
+
+
 def tweet_searched_list(list_id, list_search_keywords):
-    print("searching tweets for your required list")
+    print("Searching tweets for your required list")
     tweets = get_list_tweets(list_id)
 
     filtered_tweets = []
     for tweet in tweets:
         text = tweet['text'].lower()
-        if any(re.search(r"\b{}\b".format(re.escape(keyword)), text) for keyword in list_search_keywords):
+        keywords = list_search_keywords.split(',')
+        regex = r"\b(" + "|".join(keywords) + r")\b"
+        if re.search(regex, text):
             filtered_tweets.append(tweet)
 
     if len(filtered_tweets) > 0:
@@ -178,19 +195,23 @@ interval_task2 = int(os.getenv("interval_task2"))
 starting_time_task2 = os.getenv("starting_time_task2")
 ending_time_task2 = os.getenv("ending_time_task2")
 running_task2 = os.getenv("running_task2")
-you_follow_tweet_hours_old = os.getenv("you_follow_tweet_hours_old")
+you_follow_tweet_old = os.getenv("you_follow_tweet_old")
+time_duration_you_follow = os.getenv("time_duration_you_follow")
 
 def search_tweets_you_follow():
     print("Searching tweets for the users you follow")
-    end_time = datetime.datetime.utcnow() - datetime.timedelta(hours=int(you_follow_tweet_hours_old))
-    end_time_str = end_time.strftime('%Y-%m-%dT%H:%M:%SZ')
-    tweets = client.get_home_timeline(max_results=95, end_time=end_time_str)
+    now = datetime.utcnow()
+    since_time = now - timedelta(time_duration_you_follow=int(you_follow_tweet_old))
+    since_time = since_time.replace(tzinfo=pytz.UTC)
+    max_results = 95
+    tweets = client.get_home_timeline(max_results=max_results, expansions="author_id", tweet_fields="created_at,text")
     tweet_data = tweets.data
     result = []
 
     if not tweet_data is None and len(tweet_data) > 0:
         for tweet in tweet_data:
-            if not tweet['text'].startswith('RT'):
+            tweet_time = tweet['created_at']
+            if tweet_time >= since_time and not tweet['text'].startswith('RT'):
                 obj = {}
                 obj['id'] = tweet['id']
                 obj['text'] = tweet['text']
@@ -202,20 +223,25 @@ def search_tweets_you_follow():
     return result
 
    
- 
+
 
 def tweet_searched_you_follow(you_follow_search_keywords):
+    print("Searching tweets for people you follow")
     tweets = search_tweets_you_follow()
 
     filtered_tweets = []
     for tweet in tweets:
         text = tweet['text'].lower()
-        if any(keyword.lower() in text for keyword in you_follow_search_keywords.split(',')):
+        keywords = you_follow_search_keywords.split(',')
+        regex = r"\b(" + "|".join(keywords) + r")\b"
+        if re.search(regex, text):
             filtered_tweets.append(tweet)
 
     if len(filtered_tweets) > 0:
         df = pd.DataFrame(filtered_tweets, columns=["id", "text"])
         df.to_csv("tweets.csv", index=False, sep=",", encoding="utf-8", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+
+
 
 
 
@@ -250,28 +276,33 @@ interval_task3 = int(os.getenv("interval_task3"))
 starting_time_task3 = os.getenv("starting_time_task3")
 ending_time_task3 = os.getenv("ending_time_task3")
 running_task3 = os.getenv("running_task3")
-all_tweets_hours_old = os.getenv("all_tweets_hours_old")
-
+all_tweets_old = os.getenv("all_tweet_old")
+time_duration_all_tweets = os.getenv("time_duration_all_tweets")
 
 def search_tweets(query):
     print("searching tweets in all for your required keyword")
-    end_time = datetime.datetime.utcnow() - datetime.timedelta(hours=all_tweets_hours_old)
-    end_time_str = end_time.strftime('%Y-%m-%dT%H:%M:%SZ')
-    tweets = client.search_recent_tweets(query=query, max_results=95, end_time=end_time_str)
+    now = datetime.utcnow()
+    since_time = now - timedelta(hours=int(all_tweets_old))
+    since_time = since_time.replace(tzinfo=pytz.UTC)
+    max_results = 95
+    tweets = client.search_recent_tweets(query=query,max_results=max_results, expansions="author_id", tweet_fields="created_at,text")
     tweet_data = tweets.data
     result = []
 
-    if  not tweet_data is None and len(tweet_data) > 0:
+    if not tweet_data is None and len(tweet_data) > 0:
         for tweet in tweet_data:
-            obj = {}
-            obj['id'] = tweet['id']
-            obj['text'] = tweet['text']
-            result.append(obj)
+            tweet_time = tweet['created_at']
+            if tweet_time >= since_time:
+                obj = {}
+                obj['id'] = tweet['id']
+                obj['text'] = tweet['text']
+                result.append(obj)
     else:
         print("No tweets found")
         return []
-    
+
     return result
+
 
 
 
@@ -280,6 +311,7 @@ def tweet_searched(search_keyword):
     if len(tweets) > 0:
         df = pd.DataFrame(tweets, columns=["id", "text"])
         df.to_csv("tweets.csv", index=False, sep=",", encoding="utf-8", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+
 
 
 def reply_to_tweets_task3(csv_file, reply_phrase_list_task3):
@@ -363,10 +395,10 @@ def task1():
     clear_tweets()
     clear_tweet_id()
     tweet_searched_list(list_id,list_search_keywords)
-    log_tweets()
     extract_tweet_ids('tweets.csv', 'tweet_id.csv')
    # reply_to_tweets_task1('tweet_id.csv', reply_phrase_list_task1)
-    time.sleep(500)
+    log_tweets()
+    time.sleep(5)
 
 
 
@@ -381,19 +413,19 @@ def task2():
     time.sleep(5)
 
 
-task2()
+
 
 
 def task3():
     clear_tweets()
     clear_tweet_id()
     tweet_searched(search_keyword)
-    log_tweets()
     extract_tweet_ids('tweets.csv', 'tweet_id.csv')
    # reply_to_tweets_task3('tweet_id.csv', reply_phrase_list_task3)
-    time.sleep(500)
+    log_tweets()
+    time.sleep(5)
 
-
+task3()
 
 def task4():
     clear_tweets_owner()
