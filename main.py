@@ -118,8 +118,10 @@ def get_list_tweets(list_id):
     print("Getting tweets for your required list")
     
     now = datetime.utcnow()
-    
-    since_time = now - timedelta(time_duration_list=int(list_tweet_old))
+    if time_duration_list == "hours":
+      since_time = now - timedelta(hours =int(list_tweet_old))
+    if time_duration_list == "minutes":
+      since_time = now - timedelta(minutes =int(list_tweet_old))  
     
     since_time = since_time.replace(tzinfo=pytz.UTC)
     
@@ -201,7 +203,10 @@ time_duration_you_follow = os.getenv("time_duration_you_follow")
 def search_tweets_you_follow():
     print("Searching tweets for the users you follow")
     now = datetime.utcnow()
-    since_time = now - timedelta(time_duration_you_follow=int(you_follow_tweet_old))
+    if time_duration_you_follow == "hours":
+     since_time = now - timedelta(hours =int(you_follow_tweet_old))
+    if time_duration_you_follow == "minutes":
+        since_time = now - timedelta(minutes =int(you_follow_tweet_old)) 
     since_time = since_time.replace(tzinfo=pytz.UTC)
     max_results = 95
     tweets = client.get_home_timeline(max_results=max_results, expansions="author_id", tweet_fields="created_at,text")
@@ -282,7 +287,10 @@ time_duration_all_tweets = os.getenv("time_duration_all_tweets")
 def search_tweets(query):
     print("searching tweets in all for your required keyword")
     now = datetime.utcnow()
-    since_time = now - timedelta(hours=int(all_tweets_old))
+    if time_duration_all_tweets == "hours":
+     since_time = now - timedelta(hours=int(all_tweets_old))
+    if time_duration_all_tweets == "minutes":
+        since_time = now - timedelta(minutes=int(all_tweets_old)) 
     since_time = since_time.replace(tzinfo=pytz.UTC)
     max_results = 95
     tweets = client.search_recent_tweets(query=query,max_results=max_results, expansions="author_id", tweet_fields="created_at,text")
@@ -342,27 +350,43 @@ search_owner_tweets_task4 = os.getenv("search_owner_tweets_task4")
 starting_time_task4 = os.getenv("starting_time_task4")
 ending_time_task4 = os.getenv("ending_time_task4")
 running_task4 = os.getenv("running_task4")
+time_duration_owner_tweet = os.getenv("time_duration_owner_tweet")
+owner_tweet_old = os.getenv("owner_tweet_old")
 
 
 def search_tweets_owner(search_owner_tweets_task4):
     print("Checkig for your posted tweets to retweet")
-    tweets = client.search_recent_tweets(query=search_owner_tweets_task4, max_results=95)
+    now = datetime.utcnow()
+    if time_duration_owner_tweet == "hours":
+        since_time = now - timedelta(hours =int(owner_tweet_old))
+    if time_duration_owner_tweet == "minutes":
+        since_time = now - timedelta(minutes =int(owner_tweet_old)) 
+    since_time = since_time.replace(tzinfo=pytz.UTC)       
+    tweets = client.search_recent_tweets(query=search_owner_tweets_task4, max_results=95, expansions="author_id", tweet_fields="created_at,text")
     tweet_data = tweets.data
     result = []
 
     if  not tweet_data is None and len(tweet_data) > 0:
         for tweet in tweet_data:
-            obj = {}
-            obj['id'] = tweet['id']
-            obj['text'] = tweet['text']
-            result.append(obj)
+            tweet_time = tweet['created_at']
+            if tweet_time >= since_time:
+              obj = {}
+              obj['id'] = tweet['id']
+              obj['text'] = tweet['text']
+              result.append(obj)
     else:
         return []
     
     return result
 
 
-def tweet_searched_owner(search_tweet_owner):
+
+
+
+
+
+
+def tweet_searched_owner(search_owner_tweets_task4):
     tweets = search_tweets_owner(search_owner_tweets_task4)
     if len(tweets) > 0:
         df = pd.DataFrame(tweets, columns=["id", "text"])
@@ -403,6 +427,8 @@ def task1():
 
 
 
+
+
 def task2():
     clear_tweets()
     clear_tweet_id()
@@ -425,18 +451,19 @@ def task3():
     log_tweets()
     time.sleep(5)
 
-task3()
+
 
 def task4():
     clear_tweets_owner()
     clear_tweet_id_owner()
     tweet_searched_owner(search_owner_tweets_task4)
-    time.sleep(10)
+    time.sleep(1)
     extract_tweet_ids('tweets_owner.csv', 'tweets_owner_id.csv')
-    time.sleep(10)
+    time.sleep(1)
    # retweet_owner_tweets('tweets_owner_id.csv')
-    time.sleep(50)
+    time.sleep(1)
 
+task4()
 
 #automation
 
