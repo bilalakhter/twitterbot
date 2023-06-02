@@ -125,7 +125,7 @@ def get_list_tweets(list_id):
     
     since_time = since_time.replace(tzinfo=pytz.UTC)
     
-    max_results = 95
+    max_results = 55
     tweets = client.get_list_tweets(id=list_id, max_results=max_results, expansions="author_id", tweet_fields="created_at,text")
     tweet_data = tweets.data
     result = []
@@ -208,7 +208,7 @@ def search_tweets_you_follow():
     if time_duration_you_follow == "minutes":
         since_time = now - timedelta(minutes =int(you_follow_tweet_old)) 
     since_time = since_time.replace(tzinfo=pytz.UTC)
-    max_results = 95
+    max_results = 55
     tweets = client.get_home_timeline(max_results=max_results, expansions="author_id", tweet_fields="created_at,text")
     tweet_data = tweets.data
     result = []
@@ -292,7 +292,7 @@ def search_tweets(query):
     if time_duration_all_tweets == "minutes":
         since_time = now - timedelta(minutes=int(all_tweets_old)) 
     since_time = since_time.replace(tzinfo=pytz.UTC)
-    max_results = 95
+    max_results = 55
     tweets = client.search_recent_tweets(query=query,max_results=max_results, expansions="author_id", tweet_fields="created_at,text")
     tweet_data = tweets.data
     result = []
@@ -352,7 +352,7 @@ ending_time_task4 = os.getenv("ending_time_task4")
 running_task4 = os.getenv("running_task4")
 time_duration_owner_tweet = os.getenv("time_duration_owner_tweet")
 owner_tweet_old = os.getenv("owner_tweet_old")
-
+interval_break_task4_seconds = int(os.getenv("interval_break_task4_seconds"))
 
 def search_tweets_owner(search_owner_tweets_task4):
     print("Checkig for your posted tweets to retweet")
@@ -362,7 +362,7 @@ def search_tweets_owner(search_owner_tweets_task4):
     if time_duration_owner_tweet == "minutes":
         since_time = now - timedelta(minutes =int(owner_tweet_old)) 
     since_time = since_time.replace(tzinfo=pytz.UTC)       
-    tweets = client.search_recent_tweets(query=search_owner_tweets_task4, max_results=95, expansions="author_id", tweet_fields="created_at,text")
+    tweets = client.search_recent_tweets(query=search_owner_tweets_task4, max_results=55, expansions="author_id", tweet_fields="created_at,text")
     tweet_data = tweets.data
     result = []
 
@@ -463,7 +463,7 @@ def task4():
    # retweet_owner_tweets('tweets_owner_id.csv')
     time.sleep(1)
 
-task4()
+
 
 #automation
 
@@ -472,48 +472,46 @@ def operation1():
     while True:
         current_time = time.strftime("%H:%M:%S")
         if starting_time_task1 <= current_time <= ending_time_task1:
-            print("Task 1 is running ")
+            print("Task 1 is running \n")
             task1()
-            print("Task 1 is completed")
+            print("Task 1 is completed \n")
         else:
-            time.sleep(30)
+            time.sleep(50)
 
 def operation2():
    if running_task2 == "y": 
     while True:
         current_time = time.strftime("%H:%M:%S")
         if starting_time_task2 <= current_time <= ending_time_task2:
-            print("Task 2 is running ")
+            print("Task 2 is running \n")
             task2()
-            print("Task 2 is completed")
+            print("Task 2 is completed\n")
         else:
-            time.sleep(30)
+            time.sleep(50)
 
 def operation3():
    if running_task3 == "y": 
     while True:
         current_time = time.strftime("%H:%M:%S")
         if starting_time_task3 <= current_time <= ending_time_task3:
-            print("Task 3 is running ")
+            print("Task 3 is running \n ")
             task3()
-            print("Task 3 is completed")
+            print("Task 3 is completed\n")
         else:
-            time.sleep(30)
+            time.sleep(50)
 
 def operation4():
    if running_task4 == "y": 
-    current_time = time.strftime("%H:%M:%S")
-    if starting_time_task4 <= current_time <= ending_time_task4:
-        print("Task 4 is running ")
-        task4()
-        print("Task 4 is completed")
-    else:
-        time.sleep(30)
+    while True:
+        current_time = time.strftime("%H:%M:%S")
+        if not (starting_time_task1 <= current_time <= ending_time_task1) or (starting_time_task2 <= current_time <= ending_time_task2) or (starting_time_task3 <= current_time <= ending_time_task3):
+          print("Task 4 is running\n ")
+          task4()
+          print("Task 4 is completed\n")
+          time.sleep(int(interval_break_task4_seconds))    
 
 
 
-
-"""
 thread1 = threading.Thread(target=operation1)
 thread2 = threading.Thread(target=operation2)
 thread3 = threading.Thread(target=operation3)
@@ -528,5 +526,4 @@ thread4.start()
 
 
 
-"""
 
