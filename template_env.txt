@@ -1,0 +1,38 @@
+# This is where the important keys are
+API_KEY=
+Api_Key_Secret=
+Bearer_Token=
+Access_Id=
+Access_secret=
+
+# This section for getting tweets from list and replying them
+list_id="list_id1,List_id2"
+list_search_keywords="example1,example2"
+reply_phrase_task1="example1,example2"
+interval_task1="Integer_seconds"
+starting_time_task1="hours:minutes:seconds"
+ending_time_task1="hours:minutes:seconds"
+running_task1="y or n"
+
+# This section is for account you follow and reply to there latest tweets
+you_follow_search_keywords="keyword1,keyword2"
+reply_phrase_task2="keyword1,keyword2"
+interval_task2="integer_seconds"
+starting_time_task2="hours:minutes:seconds"
+ending_time_task2="hours:minutes:seconds"
+running_task2="y or n"
+
+# This section is to search for tweets and reply to them
+search_keyword ="(keyword1 OR keyword2) -is:reply -is:retweet"
+reply_phrase_task3="keyword1,keyword2"
+interval_task3="integer_seconds"
+starting_time_task3="hours:minutes:seconds"
+ending_time_task3="hours:minutes:seconds"
+running_task3="y or n"
+
+
+This section is to retweet own tweets
+search_owner_tweets_task4="from:your_username -is:reply -is:retweet"
+starting_time_task4="hours:minutes:seconds"
+ending_time_task4="hours:minutes:seconds"
+running_task4="y or n"

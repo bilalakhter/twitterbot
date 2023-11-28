@@ -18,11 +18,45 @@ API_KEY_SECRET = os.getenv("Api_Key_Secret")
 BEARER_TOKEN = os.getenv("Bearer_Token")
 ACCESS_TOKEN = os.getenv("Access_Id")
 ACCESS_TOKEN_SECRET = os.getenv("Access_secret")
+list_search_keywords = os.getenv("list_search_keywords")
+list_id1 = os.getenv("list_id")
+reply_phrase_task1 = os.getenv("reply_phrase_task1")
+interval_task1 = int(os.getenv("interval_task1"))
+starting_time_task1 = os.getenv("starting_time_task1")
+ending_time_task1 = os.getenv("ending_time_task1")
+running_task1 = os.getenv("running_task1")
+list_tweet_old = os.getenv("list_tweet_old")
+time_duration_list = os.getenv("time_duration_list")
+list_id2 = list_id1.split(",")
+search_keyword = os.getenv("search_keyword")
+reply_phrase_task3 = os.getenv("reply_phrase_task3")
+reply_phrase_list_task3 = reply_phrase_task3.split(",")
+interval_task3 = int(os.getenv("interval_task3"))
+starting_time_task3 = os.getenv("starting_time_task3")
+ending_time_task3 = os.getenv("ending_time_task3")
+running_task3 = os.getenv("running_task3")
+all_tweets_old = os.getenv("all_tweet_old")
+time_duration_all_tweets = os.getenv("time_duration_all_tweets")
+list_id = random.choice(list_id2)
+reply_phrase_list_task1 = reply_phrase_task1.split(",")
+you_follow_search_keywords = os.getenv("you_follow_search_keywords")
+reply_phrase_task2 = os.getenv("reply_phrase_task2")
+reply_phrase_list_task2 = reply_phrase_task2.split(",")
+interval_task2 = int(os.getenv("interval_task2"))
+starting_time_task2 = os.getenv("starting_time_task2")
+ending_time_task2 = os.getenv("ending_time_task2")
+running_task2 = os.getenv("running_task2")
+you_follow_tweet_old = os.getenv("you_follow_tweet_old")
+time_duration_you_follow = os.getenv("time_duration_you_follow")
+search_owner_tweets_task4 = os.getenv("search_owner_tweets_task4")
+starting_time_task4 = os.getenv("starting_time_task4")
+ending_time_task4 = os.getenv("ending_time_task4")
+running_task4 = os.getenv("running_task4")
+time_duration_owner_tweet = os.getenv("time_duration_owner_tweet")
+owner_tweet_old = os.getenv("owner_tweet_old")
+interval_break_task4_seconds = int(os.getenv("interval_break_task4_seconds"))
 client = tweepy.Client(BEARER_TOKEN , API_KEY , API_KEY_SECRET , ACCESS_TOKEN , ACCESS_TOKEN_SECRET)
 
-
-
-# extras
 
 def log_tweets():
     print("logging tweets do not cancel the process")
@@ -98,34 +132,12 @@ def clear_tweets_owner():
 
 def clear_tweet_id_owner():
     file_path = 'tweets_owner_id.csv'
-
-  
     with open(file_path, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerows([])
 
     print(f"Cleared content of {file_path} successfully.")
 
-
-
-
-# extras end
-
-
-# task 1
-
-list_search_keywords = os.getenv("list_search_keywords")
-list_id1 = os.getenv("list_id")
-list_id2 = list_id1.split(",")
-list_id = random.choice(list_id2)
-reply_phrase_task1 = os.getenv("reply_phrase_task1")
-reply_phrase_list_task1 = reply_phrase_task1.split(",")
-interval_task1 = int(os.getenv("interval_task1"))
-starting_time_task1 = os.getenv("starting_time_task1")
-ending_time_task1 = os.getenv("ending_time_task1")
-running_task1 = os.getenv("running_task1")
-list_tweet_old = os.getenv("list_tweet_old")
-time_duration_list = os.getenv("time_duration_list")
 
 
 def get_list_tweets(list_id):
@@ -222,19 +234,6 @@ def reply_to_tweets_task1(csv_file, reply_phrase_list_task1):
                     print(f"Error occurred while replying to tweet ID {tweet_id}: {e}")
                     continue              
 
-# task 2
-
-you_follow_search_keywords = os.getenv("you_follow_search_keywords")
-reply_phrase_task2 = os.getenv("reply_phrase_task2")
-reply_phrase_list_task2 = reply_phrase_task2.split(",")
-interval_task2 = int(os.getenv("interval_task2"))
-starting_time_task2 = os.getenv("starting_time_task2")
-ending_time_task2 = os.getenv("ending_time_task2")
-running_task2 = os.getenv("running_task2")
-you_follow_tweet_old = os.getenv("you_follow_tweet_old")
-time_duration_you_follow = os.getenv("time_duration_you_follow")
-
-
 
 
 def search_tweets_you_follow():
@@ -328,17 +327,7 @@ def reply_to_tweets_task2(csv_file, reply_phrase_list_task2):
                     continue   
 
 
-# task 3
 
-search_keyword = os.getenv("search_keyword")
-reply_phrase_task3 = os.getenv("reply_phrase_task3")
-reply_phrase_list_task3 = reply_phrase_task3.split(",")
-interval_task3 = int(os.getenv("interval_task3"))
-starting_time_task3 = os.getenv("starting_time_task3")
-ending_time_task3 = os.getenv("ending_time_task3")
-running_task3 = os.getenv("running_task3")
-all_tweets_old = os.getenv("all_tweet_old")
-time_duration_all_tweets = os.getenv("time_duration_all_tweets")
 
 def search_tweets(query):
     print("searching tweets in all for your required keyword")
@@ -422,15 +411,7 @@ def reply_to_tweets_task3(csv_file, reply_phrase_list_task3):
                     continue   
 
 
-# task 4
 
-search_owner_tweets_task4 = os.getenv("search_owner_tweets_task4")
-starting_time_task4 = os.getenv("starting_time_task4")
-ending_time_task4 = os.getenv("ending_time_task4")
-running_task4 = os.getenv("running_task4")
-time_duration_owner_tweet = os.getenv("time_duration_owner_tweet")
-owner_tweet_old = os.getenv("owner_tweet_old")
-interval_break_task4_seconds = int(os.getenv("interval_break_task4_seconds"))
 
 def search_tweets_owner(search_owner_tweets_task4):
     print("Checkig for your posted tweets to retweet")
@@ -490,7 +471,7 @@ def retweet_owner_tweets(csv_file):
 
 
 
-#tasks
+
 
 
 def task1():
@@ -543,7 +524,7 @@ def task4():
 
 
 
-#automation
+
 
 def operation1():
  if running_task1 == "y":
